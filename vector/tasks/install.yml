@@ -1,0 +1,13 @@
+---
+- name: Add Vector APT repository
+  ansible.builtin.shell: |
+    bash -c "$(curl -L https://setup.vector.dev)"
+  args:
+    creates: /etc/apt/sources.list.d/vector.list
+
+- name: Install Vector
+  ansible.builtin.apt:
+    name: vector
+    state: present
+    update_cache: yes
+  notify: restart vector 

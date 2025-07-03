@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+{{ vector_config_general | to_nice_yaml(indent=2, width=9999) }}
+
+sources:
+  {{ vector_config_sources | to_nice_yaml(indent=2, width=9999) | indent(2) }}
+
+{% if vector_config_transforms is defined and vector_config_transforms|length > 0 %}
+transforms:
+  {{ vector_config_transforms | to_nice_yaml(indent=2, width=9999) | indent(2) }}
+{% endif %}
+
+sinks:
+  {{ vector_config_sinks | to_nice_yaml(indent=2, width=9999) | indent(2) }}

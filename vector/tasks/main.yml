@@ -1,0 +1,21 @@
+---
+
+- name: Load OS-specific defaults
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_distribution | lower }}.yml"
+        - "default.yml"
+      paths:
+        - "{{ role_path }}/vars"
+
+- name: Vector Install
+  include_tasks: install.yml
+
+- name: Vector Configure
+  include_tasks: config.yml
+
+- name: Logrotate Configure
+  include_tasks: logrotate.yml
+  when: vector_logrotate_enable

@@ -1,0 +1,103 @@
+---
+
+## General
+# Set true to force the download and installation of the package
+vector_force_reinstall: false
+
+# Paths
+vector_exec_name: vector
+vector_exec_dir: /usr/bin
+vector_exec_path: "{{ vector_exec_dir }}/{{ vector_exec_name }}"
+vector_config_path: "/etc/vector"
+vector_paths: "{{ vector_config_path + vector_paths_extend | default([]) }}"
+
+# Owner
+vector_user: vector
+vector_group: vector
+
+# Current state: started, stopped
+vector_service_state: started
+
+# Allow vector to use privileged ports
+vector_cap_net_bind_service: true
+
+# Logrotate (if you are saving logs locally)
+vector_logrotate_enable: true
+vector_log_sink_dir: "/var/log/vector"
+vector_logrotate_package: 
+ - logrotate
+vector_logrotate:
+  - dest: /etc/logrotate.d/vector-sink-logs
+    path: "{{ vector_log_sink_dir }}/*/*.log"
+    options:
+      - daily
+      - missingok
+      - rotate 7
+      - compress
+      - delaycompress
+      - dateext
+      - dateformat -%Y%m%d
+      - notifempty
+      - create 0640 vector vector
+      - sharedscripts
+    postrotate: "systemctl reload vector.service >/dev/null 2>&1 || true"
+
+
+vector_config_general:
+  data_dir: "/var/lib/vector"
+  api:
+    enabled: true
+    address: "127.0.0.1:8686"
+
+vector_config_sources:
+  syslog_tcp:
+    type: syslog
+    address: "0.0.0.0:514"
+    mode: tcp
+    shutdown_timeout_secs: 60
+
+  syslog_udp:
+    type: syslog
+    address: "0.0.0.0:514"
+    mode: udp
+    shutdown_timeout_secs: 60
+
+vector_config_transforms:
+  raw_router:
+    type: remap
+    inputs: [syslog_tcp, syslog_udp]
+    source: |
+      .raw_message = .message
+
+  log_path:
+    type: remap
+    inputs: [raw_router]
+    source: |
+      parsed = parse_syslog!(.raw_message)
+      host = parsed.hostname
+      program = parsed.appname
+      .log_path = "{{ vector_log_sink_dir }}/" + host + "/" + program + ".log"
+      .message = .raw_message
+
+  parse_syslog:
+    type: remap
+    inputs: [raw_router]
+    source: |
+      . = parse_syslog!(.message)
+
+vector_config_sinks:
+  file_out:
+    type: file
+    inputs: [log_path]
+    path: "{{ '{{' }} log_path {{ '}}' }}"
+    encoding:
+      codec: text
+    compression: none
+
+  # forward_to_another_host:
+  #   type: socket
+  #   inputs: [parse_syslog]
+  #   mode: tcp
+  #   address: "192.168.1.100:514"
+  #   encoding:
+  #     codec: json

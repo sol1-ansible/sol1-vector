@@ -1,0 +1,32 @@
+---
+- name: Generete staged vector config 
+  template:
+    src: vector.yaml.j2
+    dest: "{{ vector_config_path }}/staged.vector.yaml"
+    owner: "{{ vector_user }}"
+    group: "{{ vector_group }}"
+    mode: '0640'
+
+- name: Validate staged vector config
+  command: vector validate "{{ vector_config_path }}/staged.vector.yaml"
+  register: vector_validate
+  failed_when: vector_validate.rc != 0
+
+- name: Deploy validated vector config
+  command: mv "{{ vector_config_path }}/staged.vector.yaml" "{{ vector_config_path }}/vector.yaml"
+  args:
+    removes: "{{ vector_config_path }}/staged.vector.yaml"
+  notify: Restart vector
+
+- name: Ensure {{ vector_exec_name }} is enabled and running
+  service:
+    name: "{{ vector_exec_name }}"
+    state: started
+    enabled: true
+
+- name: Enable privileged port access
+  become: true
+  ansible.builtin.command: >
+    setcap 'cap_net_bind_service=+ep' {{ vector_exec_path }}
+  when: vector_cap_net_bind_service | default(false)
+

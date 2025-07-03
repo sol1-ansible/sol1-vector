@@ -1,0 +1,9 @@
+{{ ansible_managed | comment }}
+{{ logr.path }} {
+{% for opt in logr.options %}
+    {{ opt }}
+{% endfor %}
+    postrotate
+        {{ logr.postrotate }}
+    endscript
+}

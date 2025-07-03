@@ -1,0 +1,19 @@
+---
+- name: Ensure logrotate is installed
+  become: true
+  ansible.builtin.package:
+    name: "{{ vector_logrotate_package }}"
+    state: present
+
+- name: Deploy multiple logrotate configs
+  become: true
+  ansible.builtin.template:
+    src: vector-logrotate.j2
+    dest: "{{ logr.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ vector_logrotate }}"
+  loop_control:
+    loop_var: logr
+    label: "{{ logr.dest }}"
