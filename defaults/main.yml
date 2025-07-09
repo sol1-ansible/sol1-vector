@@ -63,36 +63,23 @@ vector_config_sources:
     shutdown_timeout_secs: 60
 
 vector_config_transforms:
-  raw_router:
-    type: remap
-    inputs: [syslog_tcp, syslog_udp]
-    source: |
-      .raw_message = .message
-
   log_path:
+    inputs: 
+      - syslog_tcp
+      - syslog_udp
     type: remap
-    inputs: [raw_router]
     source: |
-      parsed = parse_syslog!(.raw_message)
-      host = parsed.hostname
-      program = parsed.appname
-      .log_path = "{{ vector_log_sink_dir }}/" + host + "/" + program + ".log"
-      .message = .raw_message
-
-  parse_syslog:
-    type: remap
-    inputs: [raw_router]
-    source: |
-      . = parse_syslog!(.message)
+      # build a dynamic path
+      .log_path, _ = "/var/log/vector/" + .hostname + "/" + .appname + ".log"
 
 vector_config_sinks:
   file_out:
     type: file
-    inputs: [log_path]
+    inputs: 
+      - log_path
     path: "{{ '{{' }} log_path {{ '}}' }}"
     encoding:
-      codec: text
-    compression: none
+      codec: json
 
   # forward_to_another_host:
   #   type: socket
