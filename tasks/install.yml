@@ -10,4 +10,4 @@
     name: vector
     state: present
     update_cache: yes
-  notify: restart vector 
+  notify: Restart vector 
