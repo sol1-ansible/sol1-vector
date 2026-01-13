@@ -1,0 +1,16 @@
+---
+- name: Ensure acl tools are installed (setfacl/getfacl)
+  ansible.builtin.package:
+    name: acl
+    state: present
+
+- name: Apply ACLs (default ACLs for dirs, access ACLs for files/dirs)
+  ansible.builtin.command: >-
+    setfacl
+    {% if item.default | default(false) %}-d {% endif -%}
+    -m u:{{ item.user }}:{{ item.perms }}
+    {{ item.path }}
+  args:
+    warn: false
+  loop: "{{ vector_acl_rules }}"
+  changed_when: true

@@ -16,6 +16,10 @@
 - name: Vector Configure
   include_tasks: config.yml
 
+- name: Vector Log Access Permissions
+  include_tasks: log_access_permissions.yml
+  when: vector_acl_rules 
+
 - name: Logrotate Configure
   include_tasks: logrotate.yml
   when: vector_logrotate_enable

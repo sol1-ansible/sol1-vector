@@ -88,3 +88,13 @@ vector_config_sinks:
   #   address: "192.168.1.100:514"
   #   encoding:
   #     codec: json
+
+vector_acl_rules: []
+  # - user: "vector"
+  #   path: "/dir1"
+  #   perms: "rX"
+  #   default: true 
+  # - user: "vector"
+  #   path: "/dir1/file1"
+  #   perms: "r"
+  #   default: false
