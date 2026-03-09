@@ -18,7 +18,7 @@
 
 - name: Vector Log Access Permissions
   include_tasks: log_access_permissions.yml
-  when: vector_acl_rules 
+  when: vector_acl_rules is defined and vector_acl_rules | length > 0
 
 - name: Logrotate Configure
   include_tasks: logrotate.yml
