@@ -10,7 +10,5 @@
     {% if item.default | default(false) %}-d {% endif -%}
     -m u:{{ item.user }}:{{ item.perms }}
     {{ item.path }}
-  args:
-    warn: false
   loop: "{{ vector_acl_rules }}"
   changed_when: true

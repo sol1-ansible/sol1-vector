@@ -8,7 +8,7 @@
     mode: '0640'
 
 - name: Validate staged vector config
-  command: vector validate "{{ vector_config_path }}/staged.vector.yaml"
+  command: vector validate --no-environment "{{ vector_config_path }}/staged.vector.yaml"
   register: vector_validate
   failed_when: vector_validate.rc != 0
 
